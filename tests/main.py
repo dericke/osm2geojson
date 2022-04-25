@@ -4,15 +4,15 @@ import json
 from osm2geojson import overpass_call, read_data_file, xml2geojson, json2geojson
 
 def get_osm_and_geojson_data(name):
-    xml_data = read_data_file(name + '.osm')
-    geojson_data = read_data_file(name + '.geojson')
+    xml_data = read_data_file(f'{name}.osm')
+    geojson_data = read_data_file(f'{name}.geojson')
     data = xml2geojson(xml_data)
     saved_geojson = json.loads(geojson_data)
     return (data, saved_geojson)
 
 def get_json_and_geojson_data(name):
-    json_data = read_data_file(name + '.json')
-    geojson_data = read_data_file(name + '.geojson')
+    json_data = read_data_file(f'{name}.json')
+    geojson_data = read_data_file(f'{name}.geojson')
     data = json.loads(json_data)
     saved_geojson = json.loads(geojson_data)
     return (data, saved_geojson)

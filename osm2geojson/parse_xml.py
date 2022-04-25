@@ -5,10 +5,8 @@ optional_meta_fields = ['timestamp', 'version:int', 'changeset:int', 'user', 'ui
 
 
 def parse_key(key):
-    t = 'string'
     parts = key.split(':')
-    if len(parts) > 1:
-        t = parts[1]
+    t = parts[1] if len(parts) > 1 else 'string'
     return parts[0], t
 
 

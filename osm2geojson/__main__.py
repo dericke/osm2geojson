@@ -95,9 +95,10 @@ def main(args=None) -> int:
 
     if args.outfile != "-" and os.path.exists(args.outfile) and not args.force:
         print(
-            "Output file '{}' already exists. Consider using -f to force overwriting.".format(args.outfile),
-            file=sys.stderr
+            f"Output file '{args.outfile}' already exists. Consider using -f to force overwriting.",
+            file=sys.stderr,
         )
+
         return 1
 
     with open(args.infile) as f:
@@ -131,11 +132,7 @@ def main(args=None) -> int:
     indent = args.indent
     if indent and indent < 0:
         indent = None
-    if args.outfile == "-":
-        target = sys.stdout
-    else:
-        target = open(args.outfile, "w")
-
+    target = sys.stdout if args.outfile == "-" else open(args.outfile, "w")
     code = 0
     try:
         print(json.dumps(result, indent=indent), file=target)

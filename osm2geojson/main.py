@@ -141,7 +141,7 @@ def element_to_shape(el, refs_index=None, area_keys: Optional[dict] = None, poly
 
 
 def _get_ref_name(el_type, id):
-    return '%s/%s' % (el_type, id)
+    return f'{el_type}/{id}'
 
 
 def get_ref_name(el):
@@ -253,8 +253,7 @@ def way_to_shape(
     elif 'nodes' in way and len(way['nodes']) > 0:
         coords = []
         for ref in way['nodes']:
-            node = get_node_ref(ref, refs_index)
-            if node:
+            if node := get_node_ref(ref, refs_index):
                 node['used'] = way['id']
                 coords.append([node['lon'], node['lat']])
             else:
@@ -294,21 +293,20 @@ def way_to_shape(
         return None
 
     props = get_element_props(way)
-    if is_geometry_polygon(way, area_keys, polygon_features):
-        try:
-            poly = fix_invalid_polygon(Polygon(coords))
-            return {
-                'shape': poly,
-                'properties': props
-            }
-        except Exception:
-            warning('Failed to generate polygon from way', pformat(way))
-            return None
-    else:
+    if not is_geometry_polygon(way, area_keys, polygon_features):
         return {
             'shape': LineString(coords),
             'properties': props
         }
+    try:
+        poly = fix_invalid_polygon(Polygon(coords))
+        return {
+            'shape': poly,
+            'properties': props
+        }
+    except Exception:
+        warning('Failed to generate polygon from way', pformat(way))
+        return None
 
 
 def is_exception(node, area_keys: Optional[dict] = None):
@@ -329,11 +327,12 @@ def is_geometry_polygon(node, area_keys: Optional[dict] = None, polygon_features
         return False
     tags = node['tags']
 
-    if 'area' in tags and tags['area'] == 'no':
-        return False
+    if 'area' in tags:
+        if tags['area'] == 'no':
+            return False
 
-    if 'area' in tags and tags['area'] == 'yes':
-        return True
+        if tags['area'] == 'yes':
+            return True
 
     if 'type' in tags and tags['type'] == 'multipolygon':
         return True
@@ -347,8 +346,9 @@ def is_geometry_polygon(node, area_keys: Optional[dict] = None, polygon_features
     if 'nodes' in node and node['nodes'][0] != node['nodes'][-1]:
         return False
 
-    is_polygon = is_geometry_polygon_without_exceptions(node, polygon_features)
-    if is_polygon:
+    if is_polygon := is_geometry_polygon_without_exceptions(
+        node, polygon_features
+    ):
         return not is_exception(node, area_keys)
     else:
         return False
@@ -405,8 +405,7 @@ def multiline_realation_to_shape(
         if member['type'] == 'way':
             way_shape = way_to_shape(member, refs_index, area_keys, polygon_features)
         elif member['type'] == 'relation':
-            found_member = get_ref(member, refs_index)
-            if found_member:
+            if found_member := get_ref(member, refs_index):
                 found_member['used'] = rel['id']
             way_shape = element_to_shape(member, refs_index, area_keys, polygon_features)
         else:
@@ -423,7 +422,7 @@ def multiline_realation_to_shape(
             way_shape['shape'] = LineString(way_shape['shape'].exterior.coords)
         lines.append(way_shape['shape'])
 
-    if len(lines) < 1:
+    if not lines:
         warning('No lines for multiline relation', pformat(rel))
         return None
 

@@ -88,8 +88,8 @@ class TestParseXmlMethods(unittest.TestCase):
         Test parsing of all files and compare with json version
         """
         for name in ['empty', 'node', 'way', 'map', 'relation']:
-            xml_data = read_data_file(name + '.osm')
-            json_data = read_data_file(name + '.json')
+            xml_data = read_data_file(f'{name}.osm')
+            json_data = read_data_file(f'{name}.json')
             parsed_json = parse_xml(xml_data)
             saved_json = json.loads(json_data)
 
@@ -112,7 +112,7 @@ class TestParseXmlMethods(unittest.TestCase):
 
         for query in queries:
             print('Test query:', query)
-            query_json = '[out:json];' + query
+            query_json = f'[out:json];{query}'
             data_xml = overpass_call(query)
             data_json = overpass_call(query_json)
             overpass_json = json.loads(data_json)
